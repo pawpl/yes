@@ -5,9 +5,10 @@ import org.rusherhack.client.api.RusherHackAPI;
 import org.rusherhack.client.api.events.client.EventUpdate;
 import org.rusherhack.client.api.feature.module.ModuleCategory;
 import org.rusherhack.client.api.feature.module.ToggleableModule;
-import org.rusherhack.client.api.setting.BooleanSetting;
 import org.rusherhack.client.api.utils.ChatUtils;
 import org.rusherhack.core.event.subscribe.Subscribe;
+import org.rusherhack.client.api.setting.Setting;
+import org.rusherhack.client.api.setting.BooleanSetting;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -42,19 +43,19 @@ public class AutoHoldWAndSpaceModule extends ToggleableModule {
         if (this.isEnabled()) {
             // Handle the "Hold W" key behavior
             if (holdWKey.getValue()) {
-                mc.options.keyUp.setPressed(true); // Simulate pressing the W key
+                Minecraft.getInstance().options.keyUp.setPressed(true); // Simulate pressing the W key
             } else {
-                mc.options.keyUp.setPressed(false); // Release the W key
+                Minecraft.getInstance().options.keyUp.setPressed(false); // Release the W key
             }
 
             // Handle the "Spam Space" key behavior
             if (spamSpacebar.getValue()) {
                 long currentTime = System.currentTimeMillis();
                 if (currentTime - lastSpacebarPressTime >= 100) {
-                    mc.options.keyJump.setPressed(true);  // Simulate pressing the Space key (space is bound to keyJump)
+                    Minecraft.getInstance().options.keyJump.setPressed(true);  // Simulate pressing the Space key (space is bound to keyJump)
                     lastSpacebarPressTime = currentTime;
                 } else {
-                    mc.options.keyJump.setPressed(false); // Stop pressing Space if the interval hasn't passed
+                    Minecraft.getInstance().options.keyJump.setPressed(false); // Stop pressing Space if the interval hasn't passed
                 }
             }
         }
