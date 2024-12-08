@@ -1,168 +1,106 @@
-package org.example;
+package org.pawpl;
 
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.client.Minecraft;
 import org.rusherhack.client.api.RusherHackAPI;
 import org.rusherhack.client.api.events.client.EventUpdate;
-import org.rusherhack.client.api.events.render.EventRender2D;
-import org.rusherhack.client.api.events.render.EventRender3D;
 import org.rusherhack.client.api.feature.module.ModuleCategory;
 import org.rusherhack.client.api.feature.module.ToggleableModule;
-import org.rusherhack.client.api.render.IRenderer2D;
-import org.rusherhack.client.api.render.IRenderer3D;
-import org.rusherhack.client.api.render.font.IFontRenderer;
-import org.rusherhack.client.api.setting.BindSetting;
-import org.rusherhack.client.api.setting.ColorSetting;
+import org.rusherhack.client.api.setting.BooleanSetting;
 import org.rusherhack.client.api.utils.ChatUtils;
-import org.rusherhack.client.api.utils.WorldUtils;
-import org.rusherhack.core.bind.key.NullKey;
-import org.rusherhack.core.event.subscribe.Subscribe;
-import org.rusherhack.core.setting.BooleanSetting;
-import org.rusherhack.core.setting.NumberSetting;
-import org.rusherhack.core.setting.StringSetting;
-import org.rusherhack.core.utils.ColorUtils;
 
-import java.awt.*;
+import org.rusherhack.core.event.subscribe.Subscribe;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
- * Example rusherhack module
- *
- * @author John200410
+ * Holds the W key and spams the Space key module for RusherHack
  */
-public class ExampleModule extends ToggleableModule {
-	
-	/**
-	 * Settings
-	 */
-	private final BooleanSetting exampleBoolean = new BooleanSetting("Boolean", "Settings can optionally have a description", true);
-	
-	private final NumberSetting<Double> exampleDouble = new NumberSetting<>("Double", 0.0, -10.0, 10.0)
-			
-			//specifies incremental step for precise numbers
-			.incremental(0.1)
-			
-			//predicate that determines conditions for the setting to be visible in the clickgui
-			.setVisibility(this.exampleBoolean::getValue)
-			
-			//consumer that is called when the setting is changed
-			.onChange(d -> ChatUtils.print("Changed double to " + d));
-	
-	private final ColorSetting exampleColor = new ColorSetting("Color", Color.CYAN)
-			
-			//set whether alpha is enabled in the color picker
-			.setAlphaAllowed(false)
-			
-			//sync the color with the theme color
-			.setThemeSync(true);
-	
-	private final StringSetting exampleString = new StringSetting("String", "Hello World!")
-			
-			//disables the rendering of the setting name in the clickgui
-			.setNameVisible(false);
-	
-	private final BindSetting rotate = new BindSetting("RotateBind", NullKey.INSTANCE /* unbound */);
-	private final NumberSetting<Float> rotateYaw = new NumberSetting<>("Yaw", 0f, 0f, 360f).incremental(0.1f);
-	private final NumberSetting<Float> rotatePitch = new NumberSetting<>("Pitch", 0f, -90f, 90f).incremental(0.1f);
-	
-	/**
-	 * Constructor
-	 */
-	public ExampleModule() {
-		super("Example", "Example plugin module", ModuleCategory.CLIENT);
-		
-		//subsettings
-		this.rotate.addSubSettings(this.rotateYaw, this.rotatePitch);
-		
-		//register settings
-		this.registerSettings(
-				this.exampleBoolean,
-				this.exampleDouble,
-				this.exampleColor,
-				this.exampleString,
-				this.rotate
-		);
-	}
-	
-	/**
-	 * 2d renderer demo
-	 */
-	@Subscribe
-	private void onRender2D(EventRender2D event) {
-		
-		//renderers
-		final IRenderer2D renderer = RusherHackAPI.getRenderer2D();
-		final IFontRenderer fontRenderer = RusherHackAPI.fonts().getFontRenderer();
-		
-		//must begin renderer first
-		renderer.begin(event.getMatrixStack(), fontRenderer);
-		
-		//draw stuff
-		renderer.drawRectangle(100, 100 + this.exampleDouble.getValue(), 100, 100, this.exampleColor.getValueRGB());
-		fontRenderer.drawString(this.exampleString.getValue(), 110, 110, Color.WHITE.getRGB());
-		
-		//end renderer
-		renderer.end();
-		
-	}
-	
-	/**
-	 * Rotation demo
-	 */
-	@Subscribe
-	private void onUpdate(EventUpdate event) {
-		
-		//only rotate while bind is held
-		if(this.rotate.getValue().isKeyDown()) {
-			
-			//loop through entities to find a target
-			Entity target = null;
-			double dist = 999d;
-			for(Entity entity : WorldUtils.getEntitiesSorted()) {
-				if(mc.player.distanceTo(entity) < dist && entity instanceof LivingEntity) {
-					target = entity;
-					dist = mc.player.distanceTo(entity);
-				}
-			}
-			
-			//rotate to target
-			if(target != null) {
-				RusherHackAPI.getRotationManager().updateRotation(target);
-			} else { //or rotate to the custom yaw
-				RusherHackAPI.getRotationManager().updateRotation(this.rotateYaw.getValue(), this.rotatePitch.getValue());
-			}
-		}
-	}
-	
-	//3d renderer demo
-	@Subscribe
-	private void onRender3D(EventRender3D event) {
-		final IRenderer3D renderer = event.getRenderer();
-		
-		final int color = ColorUtils.transparency(this.exampleColor.getValueRGB(), 0.5f); //fill colors look better when the alpha is not 100%
-		
-		//begin renderer
-		renderer.begin(event.getMatrixStack());
-		
-		//highlight targets
-		for(Entity entity : WorldUtils.getEntities()) {
-			renderer.drawBox(entity, event.getPartialTicks(), true, true, color);
-		}
-		
-		//end renderer
-		renderer.end();
-	}
-	
-	@Override
-	public void onEnable() {
-		if(mc.level != null) {
-			ChatUtils.print("Hello World! Example module is enabled");
-		}
-	}
-	
-	@Override
-	public void onDisable() {
-		if(mc.level != null) {
-			ChatUtils.print("Goodbye World! Example module has been disabled");
-		}
-	}
+public class AutoHoldWAndSpaceModule extends ToggleableModule {
+
+    private final Minecraft mc = Minecraft.getInstance(); // To access Minecraft instance
+    private final BooleanSetting holdWKey = new BooleanSetting("HoldW", "Hold the W key", true);
+    private final BooleanSetting spamSpacebar = new BooleanSetting("SpamSpace", "Spam the Space key every 100ms", true);
+    private final Timer spacebarTimer = new Timer();
+    private long lastSpacebarPressTime = 0;
+
+    /**
+     * Constructor
+     */
+    public AutoHoldWAndSpaceModule() {
+        super("AutoHoldWAndSpace", "Automatically holds W key and spams Spacebar", ModuleCategory.CLIENT);
+
+        // Register settings
+        this.registerSettings(holdWKey, spamSpacebar);
+    }
+
+    /**
+     * On Update event to simulate holding the W key and spamming the Space key
+     */
+    @Subscribe
+    private void onUpdate(EventUpdate event) {
+        // Check if the module is enabled and handle actions
+        if (this.isEnabled()) {
+            // Handle the "Hold W" key behavior
+            if (holdWKey.getValue()) {
+                mc.options.keyUp.setPressed(true); // Simulate pressing the W key
+            } else {
+                mc.options.keyUp.setPressed(false); // Release the W key
+            }
+
+            // Handle the "Spam Space" key behavior
+            if (spamSpacebar.getValue()) {
+                long currentTime = System.currentTimeMillis();
+                if (currentTime - lastSpacebarPressTime >= 100) {
+                    mc.options.keyJump.setPressed(true);  // Simulate pressing the Space key (space is bound to keyJump)
+                    lastSpacebarPressTime = currentTime;
+                } else {
+                    mc.options.keyJump.setPressed(false); // Stop pressing Space if the interval hasn't passed
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onEnable() {
+        if (mc.level != null) {
+            ChatUtils.print("AutoHoldWAndSpace module is enabled!");
+            if (spamSpacebar.getValue()) {
+                // Start spamming space at regular intervals
+                startSpacebarSpam();
+            }
+        }
+    }
+
+    @Override
+    public void onDisable() {
+        if (mc.level != null) {
+            // Stop holding the W key and spamming the Space key when the module is disabled
+            mc.options.keyUp.setPressed(false);
+            mc.options.keyJump.setPressed(false);
+            ChatUtils.print("AutoHoldWAndSpace module has been disabled.");
+        }
+    }
+
+    /**
+     * Starts a timer to handle spacebar spamming every 100ms.
+     */
+    private void startSpacebarSpam() {
+        spacebarTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                // Ensure the space key is being pressed every 100ms if the module is enabled
+                if (spamSpacebar.getValue()) {
+                    mc.options.keyJump.setPressed(true);  // Simulate pressing the Space key
+                }
+            }
+        }, 0, 100);  // Repeat every 100ms
+    }
+
+    /**
+     * Stops the timer when the module is disabled or when spacebar spamming is turned off
+     */
+    private void stopSpacebarSpam() {
+        spacebarTimer.cancel(); // Stop the timer
+    }
 }
