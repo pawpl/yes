@@ -7,8 +7,6 @@ import org.rusherhack.client.api.feature.module.ModuleCategory;
 import org.rusherhack.client.api.feature.module.ToggleableModule;
 import org.rusherhack.client.api.utils.ChatUtils;
 import org.rusherhack.core.event.subscribe.Subscribe;
-import org.rusherhack.client.api.setting.Setting;
-import org.rusherhack.client.api.setting.BooleanSetting;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -19,8 +17,8 @@ import java.util.TimerTask;
 public class AutoHoldWAndSpaceModule extends ToggleableModule {
 
     private final Minecraft mc = Minecraft.getInstance(); // To access Minecraft instance
-    private final BooleanSetting holdWKey = new BooleanSetting("HoldW", "Hold the W key", true);
-    private final BooleanSetting spamSpacebar = new BooleanSetting("SpamSpace", "Spam the Space key every 100ms", true);
+    private boolean holdWKey = true; // Default is to hold W
+    private boolean spamSpacebar = true; // Default is to spam spacebar
     private final Timer spacebarTimer = new Timer();
     private long lastSpacebarPressTime = 0;
 
@@ -29,9 +27,6 @@ public class AutoHoldWAndSpaceModule extends ToggleableModule {
      */
     public AutoHoldWAndSpaceModule() {
         super("AutoHoldWAndSpace", "Automatically holds W key and spams Spacebar", ModuleCategory.CLIENT);
-
-        // Register settings
-        this.registerSettings(holdWKey, spamSpacebar);
     }
 
     /**
@@ -42,14 +37,14 @@ public class AutoHoldWAndSpaceModule extends ToggleableModule {
         // Check if the module is enabled and handle actions
         if (this.isEnabled()) {
             // Handle the "Hold W" key behavior
-            if (holdWKey.getValue()) {
+            if (holdWKey) {
                 Minecraft.getInstance().options.keyUp.setPressed(true); // Simulate pressing the W key
             } else {
                 Minecraft.getInstance().options.keyUp.setPressed(false); // Release the W key
             }
 
             // Handle the "Spam Space" key behavior
-            if (spamSpacebar.getValue()) {
+            if (spamSpacebar) {
                 long currentTime = System.currentTimeMillis();
                 if (currentTime - lastSpacebarPressTime >= 100) {
                     Minecraft.getInstance().options.keyJump.setPressed(true);  // Simulate pressing the Space key (space is bound to keyJump)
@@ -65,7 +60,7 @@ public class AutoHoldWAndSpaceModule extends ToggleableModule {
     public void onEnable() {
         if (mc.level != null) {
             ChatUtils.print("AutoHoldWAndSpace module is enabled!");
-            if (spamSpacebar.getValue()) {
+            if (spamSpacebar) {
                 // Start spamming space at regular intervals
                 startSpacebarSpam();
             }
@@ -91,7 +86,7 @@ public class AutoHoldWAndSpaceModule extends ToggleableModule {
             @Override
             public void run() {
                 // Ensure the space key is being pressed every 100ms if the module is enabled
-                if (spamSpacebar.getValue()) {
+                if (spamSpacebar) {
                     mc.options.keyJump.setPressed(true);  // Simulate pressing the Space key
                 }
             }
@@ -104,5 +99,14 @@ public class AutoHoldWAndSpaceModule extends ToggleableModule {
     private void stopSpacebarSpam() {
         spacebarTimer.cancel(); // Stop the timer
         spacebarTimer.purge();  // Clear any canceled tasks
+    }
+
+    // Setter methods to change the behavior (these could be tied to a command or config file)
+    public void setHoldWKey(boolean holdWKey) {
+        this.holdWKey = holdWKey;
+    }
+
+    public void setSpamSpacebar(boolean spamSpacebar) {
+        this.spamSpacebar = spamSpacebar;
     }
 }
