@@ -1,5 +1,5 @@
 {
-  "Plugin-Class": "org.pawpl.ExamplePlugin",
+  "Plugin-Class": "org.pawpl.AutoHoldPlugin",
   "Name": "Example Plugin",
   "Version": "${plugin_version}",
   "Description": "Example rusherhack plugin",
