@@ -6,6 +6,7 @@ import org.rusherhack.client.api.feature.module.ToggleableModule;
 import org.rusherhack.core.event.stage.Stage;
 import org.rusherhack.core.event.subscribe.Subscribe;
 import org.rusherhack.core.setting.EnumSetting;
+import org.rusherhack.core.setting.NumberSetting;
 
 public class AutoHoldModule extends ToggleableModule {
 
@@ -15,34 +16,27 @@ public class AutoHoldModule extends ToggleableModule {
         HOLD
     }
 
-    // Enum setting to switch between HOLD and SPAM modes
     private final EnumSetting<Mode> mode = new EnumSetting<>("Mode", Mode.HOLD);
 
-    // Constructor for the module
     public AutoHoldModule() {
         super("AutoHoldModule", "Holds or spams space based on the mode", ModuleCategory.CLIENT);
         
-        // Register the mode setting
         this.registerSettings(mode);
     }
 
     @Subscribe(stage = Stage.PRE)
     public void onTick(EventUpdate event) {
-        // Ensure player is not null
         if (mc.player == null) return;
 
-        // Handle the spacebar key behavior based on the selected mode
         if (mode.getValue() == Mode.HOLD) {
             mc.options.keyJump.setPressed(true);  // Hold space key down
         } else if (mode.getValue() == Mode.SPAM) {
-            // Toggle space key press every tick
             mc.options.keyJump.setPressed(!mc.options.keyJump.isPressed());
         }
     }
 
     @Override
     public void onDisable() {
-        // Ensure space key is released when module is disabled
         mc.options.keyJump.setPressed(false);
     }
 }
