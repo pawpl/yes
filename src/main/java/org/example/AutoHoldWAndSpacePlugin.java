@@ -7,7 +7,7 @@ import org.rusherhack.client.api.feature.module.Module;
 import org.rusherhack.client.api.feature.module.ModuleCategory;
 
 /**
- * RusherHack plugin that registers the AutoHoldWAndSpace module, a HUD element, and a command.
+ * RusherHack plugin that registers the AutoHoldWAndSpace module.
  */
 public class AutoHoldWAndSpacePlugin extends Plugin {
 
@@ -20,14 +20,6 @@ public class AutoHoldWAndSpacePlugin extends Plugin {
         final AutoHoldWAndSpaceModule autoHoldModule = new AutoHoldWAndSpaceModule();
         RusherHackAPI.getModuleManager().registerFeature(autoHoldModule);
         
-        // Create and register a HUD element to display module status
-        final AutoHoldWAndSpaceHudElement hudElement = new AutoHoldWAndSpaceHudElement();
-        RusherHackAPI.getHudManager().registerFeature(hudElement);
-        
-        // Create and register a command to toggle the module
-        final AutoHoldWAndSpaceCommand toggleCommand = new AutoHoldWAndSpaceCommand();
-        RusherHackAPI.getCommandManager().registerFeature(toggleCommand);
-
         // Inform the user that the plugin has loaded
         ChatUtils.print("AutoHoldWAndSpace plugin is active!");
     }
