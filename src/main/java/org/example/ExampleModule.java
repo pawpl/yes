@@ -13,7 +13,7 @@ import org.rusherhack.core.event.subscribe.Subscribe;
 import java.util.Timer;
 import java.util.TimerTask;
 
-/**
+/**ok
  * Holds the W key and spams the Space key module for RusherHack
  */
 public class AutoHoldWAndSpaceModule extends ToggleableModule {
