@@ -7,13 +7,12 @@ import org.rusherhack.client.api.feature.module.ModuleCategory;
 import org.rusherhack.client.api.feature.module.ToggleableModule;
 import org.rusherhack.client.api.setting.BooleanSetting;
 import org.rusherhack.client.api.utils.ChatUtils;
-
 import org.rusherhack.core.event.subscribe.Subscribe;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-/**ok
+/**
  * Holds the W key and spams the Space key module for RusherHack
  */
 public class AutoHoldWAndSpaceModule extends ToggleableModule {
@@ -80,6 +79,7 @@ public class AutoHoldWAndSpaceModule extends ToggleableModule {
             mc.options.keyJump.setPressed(false);
             ChatUtils.print("AutoHoldWAndSpace module has been disabled.");
         }
+        stopSpacebarSpam();  // Stop the timer when disabled
     }
 
     /**
@@ -102,5 +102,6 @@ public class AutoHoldWAndSpaceModule extends ToggleableModule {
      */
     private void stopSpacebarSpam() {
         spacebarTimer.cancel(); // Stop the timer
+        spacebarTimer.purge();  // Clear any canceled tasks
     }
 }
